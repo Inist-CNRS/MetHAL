@@ -1,0 +1,14 @@
+{
+  "name": "methal",
+  "version": "1.0.0",
+  "description": "Enrichissement de chaque EC par une requête vers HAL pour récupérer les métadonnées de l'article. ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "equipe ezPAARSE",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.57.0"
+  }
+}
