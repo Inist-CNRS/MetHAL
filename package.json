@@ -1,10 +1,14 @@
 {
   "name": "methal",
-  "version": "1.0.0",
-  "description": "Enrichissement de chaque EC par une requête vers HAL pour récupérer les métadonnées de l'article. ",
+  "version": "2.0.2",
+  "description": "Enrichissement de chaque EC par une requête vers HAL pour récupérer les métadonnées de l'article.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },  
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aloukili/MetHAL.git"
   },
   "author": "equipe ezPAARSE",
   "license": "ISC",
