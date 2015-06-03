@@ -6,8 +6,8 @@
 3 info using node@v0.12.2
 4 verbose publish [ '.' ]
 5 verbose stack Error: Failed to parse json
-5 verbose stack Unexpected token '\n' at 4:118
-5 verbose stack r une requête vers HAL pour récupérer les métadonnées de l'article.
+5 verbose stack Unexpected token ' ' at 4:120
+5 verbose stack une requête vers HAL pour récupérer les métadonnées de l'article.\n
 5 verbose stack                                                                     ^
 5 verbose stack     at parseError (/home/loukili/.nvm/versions/node/v0.12.2/lib/node_modules/npm/node_modules/read-package-json/read-json.js:406:25)
 5 verbose stack     at parseJson (/home/loukili/.nvm/versions/node/v0.12.2/lib/node_modules/npm/node_modules/read-package-json/read-json.js:86:51)
@@ -23,8 +23,8 @@
 11 error file /home/loukili/methal/package.json
 12 error code EJSONPARSE
 13 error Failed to parse json
-13 error Unexpected token '\n' at 4:118
-13 error r une requête vers HAL pour récupérer les métadonnées de l'article.
+13 error Unexpected token ' ' at 4:120
+13 error une requête vers HAL pour récupérer les métadonnées de l'article.\n
 13 error                                                                     ^
 14 error File: /home/loukili/methal/package.json
 15 error Failed to parse package.json data.

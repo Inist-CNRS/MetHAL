@@ -10,10 +10,12 @@ Enrichissement de chaque EC par une requête vers HAL pour récupérer les méta
   npm i -save methal
 
   ensuite au sein de votre code ajouter ces lignes
-
+  
+```js
   var MetHal = require('methal');
 
 
   MetHal.MetHAL('japon' , function (err , res) {
     console.log(res);
   });
+```
