@@ -13,8 +13,10 @@ Enrichissement de chaque EC par une requête vers HAL pour récupérer les méta
 
 ```js
   var MetHal = require('methal');
+```
 
 
+```js
   MetHal.MetHAL('japon' , function (err , res) {
     console.log(res);
   });

@@ -3,6 +3,6 @@
 var MetHal = require('./index');
 
 
-MetHal.MetHAL("japon" , function (err , res) {
-	console.log(res);
+MetHal.MetHAL('docid:"19"' , function (err , res) {
+	console.log(res.response.docs);
 });

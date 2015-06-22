@@ -14,11 +14,11 @@ function  MetHAL(argument, callback){
 	});
 
 	//nettoyage  de l'argument de recherche de toute carréctaire qui peut causé un beug sur notre requête
-	var argumentNonstopword = argument.replace(/[%&"#?;=+*:]/gi , ' ' );
+	//var argumentNonstopword = argument.replace(/[%&"#?;=+*:]/gi , ' ' );
 
 	var url ='http://api.archives-ouvertes.fr/search/?wt=json&fl=*';
 	// assemblement du lien de la requête
-	var requete = url + '&q=(' + argumentNonstopword + ')'; 
+	var requete = url + '&q=(' + argument + ')'; 
 	
 	//envoye de la requête vers l'api hal et lecture du resultat
 	request.get(requete , function (err, res , body){
