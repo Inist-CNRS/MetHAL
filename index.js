@@ -13,8 +13,7 @@ function  MetHAL(argument, callback){
 	         process.env.HTTPS_PROXY
 	});
 
-	//nettoyage  de l'argument de recherche de toute carréctaire qui peut causé un beug sur notre requête
-	//var argumentNonstopword = argument.replace(/[%&"#?;=+*:]/gi , ' ' );
+
 
 	var url ='http://api.archives-ouvertes.fr/search/?wt=json&fl=*';
 	// assemblement du lien de la requête
