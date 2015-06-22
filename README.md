@@ -15,9 +15,17 @@ Enrichissement de chaque EC par une requête vers HAL pour récupérer les méta
   var MetHal = require('methal');
 ```
 
-
+exemple de recherche avec  la propriété docid 
 ```js
-  MetHal.MetHAL('japon' , function (err , res) {
-    console.log(res);
-  });
+MetHal.MetHAL('docid:"19"' , function (err , res) {
+	console.log(res.response.docs);
+});
 ```
+valeur de retour les métadonnées associées à cette propriété.
+
+
+lien vers github
+https://github.com/aloukili/MetHAL
+
+lien vers l'instance npm
+https://www.npmjs.com/package/methal
