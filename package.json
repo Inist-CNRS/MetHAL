@@ -1,7 +1,7 @@
 {
   "name": "methal",
   "version": "1.0.3",
-  "description": "Enrichissement de chaque EC par une requête vers HAL pour récupérer les métadonnées de l'article.",
+  "description": "Wrapper around the HAL API.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/aloukili/MetHAL.git"
   },
-  "author": "equipe ezPAARSE",
+  "author": "ezPAARSE Team",
   "license": "ISC",
   "dependencies": {
     "request": "^2.57.0"
