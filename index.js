@@ -114,6 +114,11 @@ exports.query = function (search, options, callback) {
   // query link
   var url = 'http://api.archives-ouvertes.fr/search/?wt=json&q=' + encodeURIComponent(query);
 
+  // for convenience, add fields as an alias for fl
+  if (options.fields) {
+    options.fl = options.fields;
+    delete options.fields;
+  }
   // for convenience, convert fl to string if it's an array
   if (Array.isArray(options.fl)) {
     options.fl = options.fl.join(',');
