@@ -14,10 +14,11 @@ var request = require('request').defaults({
  * @return {String}          solr compliant query string
  */
 function buildQuery(search, operator) {
-  search   = search   || {};
-  operator = operator || 'AND';
+  search   = search   || {};
+  operator = operator || 'AND';
 
   var parts = [];
+  var negation; // NOT subquery
 
   if (Array.isArray(search)) {
     search.forEach(function (subquery) {
@@ -25,28 +26,36 @@ function buildQuery(search, operator) {
       if (part) { parts.push(part); }
     });
   } else {
+    var subquery;
+
     for (var p in search) {
       switch (p) {
-      case '$or':
-        var orQuery = buildQuery(search[p], 'OR');
-        if (orQuery) { parts.push(orQuery); }
-        break;
-      case '$and':
-        var andQuery = buildQuery(search[p], 'AND');
-        if (andQuery) { parts.push(andQuery); }
-        break;
-      default:
-        parts.push(p + ':' + search[p].toString());
+        case '$or':
+          subquery = buildQuery(search[p], 'OR');
+          if (subquery) { parts.push(subquery); }
+          break;
+        case '$and':
+          subquery = buildQuery(search[p], 'AND');
+          if (subquery) { parts.push(subquery); }
+          break;
+        case '$not':
+          subquery = buildQuery(search.$not, 'OR');
+          if (subquery) { negation = 'NOT(' + subquery + ')'; }
+          break;
+        default:
+          parts.push(p + ':' + search[p].toString());
       }
     }
   }
 
-  if (parts.length === 1) {
-    return parts[0];
-  } else if (parts.length > 0) {
-    return '(' + parts.join(')' + operator + '(') + ')';
+  if (parts.length === 0) {
+    return negation || '';
+  } else if (parts.length > 1 || negation) {
+    var query = negation ? negation + operator + '(' : '(';
+
+    return (query += parts.join(')' + operator + '(') + ')');
   } else {
-    return '';
+    return parts[0];
   }
 }
 
