@@ -14,28 +14,39 @@ var request = require('request').defaults({
  * @return {String}          solr compliant query string
  */
 function buildQuery(search, operator) {
-  search   = search || {};
+  search   = search   || {};
   operator = operator || 'AND';
 
   var parts = [];
 
-  for (var p in search) {
-    switch (p) {
-    case '$or':
-      parts.push(buildQuery(search[p], 'OR'));
-      break;
-    case '$and':
-      parts.push(buildQuery(search[p], 'AND'));
-      break;
-    default:
-      parts.push(p + ':' + search[p].toString());
+  if (Array.isArray(search)) {
+    search.forEach(function (subquery) {
+      var part = buildQuery(subquery, 'AND');
+      if (part) { parts.push(part); }
+    });
+  } else {
+    for (var p in search) {
+      switch (p) {
+      case '$or':
+        var orQuery = buildQuery(search[p], 'OR');
+        if (orQuery) { parts.push(orQuery); }
+        break;
+      case '$and':
+        var andQuery = buildQuery(search[p], 'AND');
+        if (andQuery) { parts.push(andQuery); }
+        break;
+      default:
+        parts.push(p + ':' + search[p].toString());
+      }
     }
   }
 
-  if (parts.length > 0) {
+  if (parts.length === 1) {
+    return parts[0];
+  } else if (parts.length > 0) {
     return '(' + parts.join(')' + operator + '(') + ')';
   } else {
-    return '(*:*)';
+    return '';
   }
 }
 
@@ -103,7 +114,7 @@ exports.query = function (search, options, callback) {
     options  = {};
   }
 
-  var query = (typeof search === 'string' ? search : buildQuery(search, 'AND'));
+  var query = (typeof search === 'string' ? search : buildQuery(search, 'AND') || '*:*');
 
   var requestOptions = {};
   if (options.hasOwnProperty('proxy')) {
