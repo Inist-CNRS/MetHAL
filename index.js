@@ -50,13 +50,14 @@ function buildQuery(search, operator) {
 
   if (parts.length === 0) {
     return negation || '';
-  } else if (parts.length > 1 || negation) {
-    var query = negation ? negation + operator + '(' : '(';
-
-    return (query += parts.join(')' + operator + '(') + ')');
-  } else {
-    return parts[0];
   }
+  
+  if (parts.length > 1 || negation) {
+    var query = negation ? negation + operator + '(' : '(';
+    return (query += parts.join(')' + operator + '(') + ')');
+  }
+  
+  return parts[0];
 }
 
 /**
