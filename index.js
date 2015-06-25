@@ -13,7 +13,8 @@ var request = require('request').defaults({
  * @param  {String} operator operator to use between options, ie. AND/OR
  * @return {String}          solr compliant query string
  */
- var test = {};
+ var test = "test";
+
 function buildQuery(search, operator) {
   search   = search   || {};
   operator = operator || 'AND';
