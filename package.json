@@ -1,11 +1,11 @@
 {
   "name": "methal",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Wrapper around the HAL API.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },  
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/aloukili/MetHAL.git"
