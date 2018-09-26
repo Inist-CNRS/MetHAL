@@ -1,6 +1,6 @@
 'use strict';
 
-var request = require('request');
+const request = require('request');
 
 /**
  * Build a (sub)query string from search options
@@ -12,33 +12,33 @@ function buildQuery(search, operator) {
   search   = search   || {};
   operator = operator || 'AND';
 
-  var parts = [];
-  var negation; // NOT subquery
+  const parts = [];
+  let negation; // NOT subquery
 
   if (Array.isArray(search)) {
     search.forEach(function (subquery) {
-      var part = buildQuery(subquery, 'AND');
+      const part = buildQuery(subquery, 'AND');
       if (part) { parts.push(part); }
     });
   } else {
-    var subquery;
+    let subquery;
 
-    for (var p in search) {
+    for (const p in search) {
       switch (p) {
-        case '$or':
-          subquery = buildQuery(search[p], 'OR');
-          if (subquery) { parts.push(subquery); }
-          break;
-        case '$and':
-          subquery = buildQuery(search[p], 'AND');
-          if (subquery) { parts.push(subquery); }
-          break;
-        case '$not':
-          subquery = buildQuery(search.$not, 'OR');
-          if (subquery) { negation = 'NOT(' + subquery + ')'; }
-          break;
-        default:
-          parts.push(p + ':' + search[p].toString());
+      case '$or':
+        subquery = buildQuery(search[p], 'OR');
+        if (subquery) { parts.push(subquery); }
+        break;
+      case '$and':
+        subquery = buildQuery(search[p], 'AND');
+        if (subquery) { parts.push(subquery); }
+        break;
+      case '$not':
+        subquery = buildQuery(search.$not, 'OR');
+        if (subquery) { negation = `NOT(${subquery})`; }
+        break;
+      default:
+        parts.push(`${p}:${search[p].toString()}`);
       }
     }
   }
@@ -48,8 +48,10 @@ function buildQuery(search, operator) {
   }
 
   if (parts.length > 1 || negation) {
-    var query = negation ? negation + operator + '(' : '(';
-    return (query += parts.join(')' + operator + '(') + ')');
+    let query = negation ? `${negation} ${operator} (` : '(';
+    query += parts.join(`) ${operator} (`);
+    query += ')';
+    return query;
   }
 
   return parts[0];
@@ -119,18 +121,18 @@ exports.query = function (search, options, callback) {
     options  = {};
   }
 
-  var query = (typeof search === 'string' ? search : buildQuery(search, 'AND') || '*:*');
+  const query = (typeof search === 'string' ? search : buildQuery(search, 'AND') || '*:*');
 
-  var requestOptions = {};
+  const requestOptions = {};
   if (options.hasOwnProperty('proxy')) {
     requestOptions.proxy = options.proxy;
     delete options.proxy;
   }
 
   // query link
-  var url = options.core
-    ? 'http://ccsdsolrvip.in2p3.fr:8080/solr/' + options.core + '/select?&wt=json&q=' + encodeURIComponent(query)
-    : 'http://api.archives-ouvertes.fr/search/?wt=json&q=' + encodeURIComponent(query)
+  let url = options.core
+    ? `http://ccsdsolrvip.in2p3.fr:8080/solr/${options.core}/select?&wt=json&q=${encodeURIComponent(query)}`
+    : `http://api.archives-ouvertes.fr/search/?wt=json&q=${encodeURIComponent(query)}`;
 
   // for convenience, add fields as an alias for fl
   if (options.fields) {
@@ -143,18 +145,18 @@ exports.query = function (search, options, callback) {
   }
 
   // append options to the query (ex: start=1, rows=10)
-  for (var p in options) {
-    url += '&' + p + '=' + options[p];
+  for (const p in options) {
+    url += `&${p}=${options[p]}`;
   }
 
   request.get(url, requestOptions, function (err, res, body) {
     if (err) { return callback(err); }
 
     if (res.statusCode !== 200) {
-      return callback(new Error('unexpected status code : ' + res.statusCode));
+      return callback(new Error(`unexpected status code : ${res.statusCode}`));
     }
 
-    var info;
+    let info;
 
     try {
       info = JSON.parse(body);
@@ -164,7 +166,7 @@ exports.query = function (search, options, callback) {
 
     // if an error is thown, the json should contain the status code and a detailed message
     if (info.error) {
-      var error = new Error(info.error.msg || 'got an unknown error from the API');
+      const error = new Error(info.error.msg || 'got an unknown error from the API');
       error.code = info.error.code;
       return callback(error) ;
     }
@@ -172,4 +174,3 @@ exports.query = function (search, options, callback) {
     callback(null , info);
   });
 };
-;
