@@ -13,6 +13,6 @@
   "author": "ezPAARSE Team",
   "license": "ISC",
   "dependencies": {
-    "request": "^2.57.0"
+    "request": "^2.88.0"
   }
 }
