@@ -51,12 +51,12 @@ function buildQuery(search, operator) {
   if (parts.length === 0) {
     return negation || '';
   }
-  
+
   if (parts.length > 1 || negation) {
     var query = negation ? negation + operator + '(' : '(';
     return (query += parts.join(')' + operator + '(') + ')');
   }
-  
+
   return parts[0];
 }
 
@@ -65,14 +65,14 @@ function buildQuery(search, operator) {
  * @param  {Object}   options
  * @param  {Function} callback(err, docs)
  */
-exports.find = function (core, search, options, callback) {
+exports.find = function (search, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
     options  = {};
   }
 
-  exports.query(core, search, options, function (err, result) {
+  exports.query(search, options, function (err, result) {
     if (err) { return callback(err); }
 
     if (result.response && Array.isArray(result.response.docs)) {
@@ -89,7 +89,7 @@ exports.find = function (core, search, options, callback) {
  * @param  {Object}   options
  * @param  {Function} callback(err, docs)
  */
-exports.findOne = function (core, search, options, callback) {
+exports.findOne = function (search, options, callback) {
   options = options || {};
 
   if (typeof options === 'function') {
@@ -99,7 +99,7 @@ exports.findOne = function (core, search, options, callback) {
 
   options.rows = 1;
 
-  exports.query(core, search, options, function (err, result) {
+  exports.query(search, options, function (err, result) {
     if (err) { return callback(err); }
 
     if (result.response && Array.isArray(result.response.docs)) {
@@ -116,7 +116,7 @@ exports.findOne = function (core, search, options, callback) {
  * @param  {Object}   options  proxy and query options (sort, rows, fl...)
  * @param  {Function} callback(err, result)
  */
-exports.query = function (core, search, options, callback) {
+exports.query = function (search, options, callback) {
   options = options || {};
 
   if (typeof options === 'function') {
@@ -133,8 +133,9 @@ exports.query = function (core, search, options, callback) {
   }
 
   // query link
-  //var url = 'http://api.archives-ouvertes.fr/search/?wt=json&q=' + encodeURIComponent(query);
-  var url = 'http://ccsdsolrvip.in2p3.fr:8080/solr/'+ core +'/select?&wt=json&q=' + encodeURIComponent(query);
+  var url = options.core
+    ? 'http://ccsdsolrvip.in2p3.fr:8080/solr/' + options.core + '/select?&wt=json&q=' + encodeURIComponent(query)
+    : 'http://api.archives-ouvertes.fr/search/?wt=json&q=' + encodeURIComponent(query)
 
   // for convenience, add fields as an alias for fl
   if (options.fields) {
