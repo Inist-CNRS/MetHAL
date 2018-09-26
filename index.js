@@ -1,11 +1,6 @@
 'use strict';
 
-var request = require('request').defaults({
-  proxy: process.env.http_proxy ||
-         process.env.HTTP_PROXY ||
-         process.env.https_proxy ||
-         process.env.HTTPS_PROXY
-});
+var request = require('request');
 
 /**
  * Build a (sub)query string from search options
