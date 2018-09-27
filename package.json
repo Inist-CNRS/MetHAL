@@ -1,5 +1,5 @@
 {
-  "name": "methal",
+  "name": "@ezpaarse-project/methal",
   "version": "2.1.0",
   "description": "Wrapper around the HAL API.",
   "main": "index.js",
