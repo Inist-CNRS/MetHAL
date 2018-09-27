@@ -4,7 +4,7 @@ Wrapper around the HAL API. It allows to query the HAL database in a convenient 
 
 ## Install
 ```bash
-  npm install --save methal
+  npm install --save @ezpaarse-project/methal
 ```
 
 ## Usage
