@@ -1,6 +1,5 @@
 'use strict';
-
-const request = require('request');
+const axios = require('axios');
 
 /**
  * Build a (sub)query string from search options
@@ -148,22 +147,12 @@ exports.query = function (search, options, callback) {
   for (const p in options) {
     url += `&${p}=${options[p]}`;
   }
-
-  request.get(url, requestOptions, function (err, res, body) {
-    if (err) { return callback(err); }
-
-    if (res.statusCode !== 200) {
+  axios.get(url, requestOptions).then(response => {
+    if (response.res.statusCode !== 200) {
       return callback(new Error(`unexpected status code : ${res.statusCode}`));
     }
-
-    let info;
-
-    try {
-      info = JSON.parse(body);
-    } catch(e) {
-      return callback(e);
-    }
-
+    
+    const info = JSON.parse(body);
     // if an error is thown, the json should contain the status code and a detailed message
     if (info.error) {
       const error = new Error(info.error.msg || 'got an unknown error from the API');
@@ -172,5 +161,55 @@ exports.query = function (search, options, callback) {
     }
 
     callback(null , info);
-  });
+  }).catch(error => callback(error));
 };
+
+/**
+ * Cursor strength to scroll through thousands of results encapsulated in a stream
+ */
+class ApiHalStream extends Readable {
+  constructor (
+    baseUrl = 'http://api.archives-ouvertes.fr/search',
+    options = {
+      q: 'structCountry_s:fr',
+      fq: 'producedDateY_i:2014',
+      rows: 1000,
+      sort: 'docid asc',
+      cursorMark: '*'
+    }
+  ) {
+    super({ objectMode: true });
+    this.reading = false;
+    this.counter = 0;
+    this.urlBase = baseUrl;
+    this.params = options;
+  }
+
+  _read () {
+    if (this.reading) return false;
+    this.reading = true;
+    const self = this;
+    function getMoreUntilDone (url) {
+      axios.get(url).then(response => {
+        response.data.response.docs.map((doc) => {
+          self.counter++;
+          self.push(doc);
+        });
+        if (self.counter < response.data.response.numFound) {
+          self.params.cursorMark = response.data.nextCursorMark;
+          const nextUrl = `${self.urlBase}/?${querystring.stringify(self.params)}`;
+          getMoreUntilDone(nextUrl);
+        } else {
+          self.push(null);
+          self.counter = 0;
+          self.reading = false;
+        }
+      }).catch(error => {
+        self.emit('error', error);
+      });
+    }
+    getMoreUntilDone(`${this.urlBase}/?${querystring.stringify(this.params)}`);
+  }
+}
+
+exports.stream = ApiHalStream;
