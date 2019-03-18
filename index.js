@@ -70,7 +70,7 @@ exports.find = function (search, options, callback) {
   }
 
   exports.query(search, options, function (err, result) {
-    if (err) { return callback(err); }
+    if (err) return callback(err);
 
     if (result.response && Array.isArray(result.response.docs)) {
       callback(null, result.response.docs);
@@ -149,19 +149,11 @@ exports.query = function (search, options, callback) {
     url += `&${p}=${options[p]}`;
   }
   axios.get(url, requestOptions).then(response => {
-    if (response.res.statusCode !== 200) {
+    if (response.status !== 200) {
       return callback(new Error(`unexpected status code : ${response.statusCode}`));
     }
 
-    const info = JSON.parse(response.data);
-    // if an error is thown, the json should contain the status code and a detailed message
-    if (info.error) {
-      const error = new Error(info.error.msg || 'got an unknown error from the API');
-      error.code = info.error.code;
-      return callback(error);
-    }
-
-    callback(null, info);
+    callback(null, response.data);
   }).catch(error => callback(error));
 };
 
@@ -170,19 +162,18 @@ exports.query = function (search, options, callback) {
  */
 class ApiHalStream extends Readable {
   constructor (
-    baseUrl = 'http://api.archives-ouvertes.fr/search',
     options = {
       q: '*',
-      rows: 1000,
-      sort: 'docid asc',
-      cursorMark: '*'
+      rows: 1000
     }
   ) {
     super({ objectMode: true });
     this.reading = false;
     this.counter = 0;
-    this.urlBase = baseUrl;
+    this.urlBase = 'http://api.archives-ouvertes.fr/search';
     this.params = options;
+    this.params.sort = 'docid asc';
+    this.params.cursorMark = '*';
   }
 
   _read () {
@@ -212,4 +203,4 @@ class ApiHalStream extends Readable {
   }
 }
 
-exports.stream = ApiHalStream;
+exports.Stream = ApiHalStream;
