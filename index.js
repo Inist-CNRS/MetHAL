@@ -163,8 +163,7 @@ exports.query = function (search, options, callback) {
 class ApiHalStream extends Readable {
   constructor (
     options = {
-      q: '*',
-      rows: 1000
+      q: '*'
     }
   ) {
     super({ objectMode: true });
@@ -174,6 +173,7 @@ class ApiHalStream extends Readable {
     this.params = options;
     this.params.sort = 'docid asc';
     this.params.cursorMark = '*';
+    this.params.rows = 1000;
   }
 
   _read () {
