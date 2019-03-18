@@ -1,5 +1,7 @@
 'use strict';
 const axios = require('axios');
+const { Readable } = require('stream');
+const querystring = require('querystring');
 
 /**
  * Build a (sub)query string from search options
@@ -7,8 +9,8 @@ const axios = require('axios');
  * @param  {String} operator operator to use between options, ie. AND/OR
  * @return {String}          solr compliant query string
  */
-function buildQuery(search, operator) {
-  search   = search   || {};
+function buildQuery (search, operator) {
+  search = search || {};
   operator = operator || 'AND';
 
   const parts = [];
@@ -24,20 +26,20 @@ function buildQuery(search, operator) {
 
     for (const p in search) {
       switch (p) {
-      case '$or':
-        subquery = buildQuery(search[p], 'OR');
-        if (subquery) { parts.push(subquery); }
-        break;
-      case '$and':
-        subquery = buildQuery(search[p], 'AND');
-        if (subquery) { parts.push(subquery); }
-        break;
-      case '$not':
-        subquery = buildQuery(search.$not, 'OR');
-        if (subquery) { negation = `NOT(${subquery})`; }
-        break;
-      default:
-        parts.push(`${p}:${search[p].toString()}`);
+        case '$or':
+          subquery = buildQuery(search[p], 'OR');
+          if (subquery) parts.push(subquery);
+          break;
+        case '$and':
+          subquery = buildQuery(search[p], 'AND');
+          if (subquery) parts.push(subquery);
+          break;
+        case '$not':
+          subquery = buildQuery(search.$not, 'OR');
+          if (subquery) negation = `NOT(${subquery})`;
+          break;
+        default:
+          parts.push(`${p}:${search[p].toString()}`);
       }
     }
   }
@@ -62,10 +64,9 @@ function buildQuery(search, operator) {
  * @param  {Function} callback(err, docs)
  */
 exports.find = function (search, options, callback) {
-
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   exports.query(search, options, function (err, result) {
@@ -90,7 +91,7 @@ exports.findOne = function (search, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   options.rows = 1;
@@ -117,7 +118,7 @@ exports.query = function (search, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   const query = (typeof search === 'string' ? search : buildQuery(search, 'AND') || '*:*');
@@ -149,18 +150,18 @@ exports.query = function (search, options, callback) {
   }
   axios.get(url, requestOptions).then(response => {
     if (response.res.statusCode !== 200) {
-      return callback(new Error(`unexpected status code : ${res.statusCode}`));
+      return callback(new Error(`unexpected status code : ${response.statusCode}`));
     }
-    
-    const info = JSON.parse(body);
+
+    const info = JSON.parse(response.data);
     // if an error is thown, the json should contain the status code and a detailed message
     if (info.error) {
       const error = new Error(info.error.msg || 'got an unknown error from the API');
       error.code = info.error.code;
-      return callback(error) ;
+      return callback(error);
     }
 
-    callback(null , info);
+    callback(null, info);
   }).catch(error => callback(error));
 };
 
