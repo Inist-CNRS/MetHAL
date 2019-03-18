@@ -171,8 +171,7 @@ class ApiHalStream extends Readable {
   constructor (
     baseUrl = 'http://api.archives-ouvertes.fr/search',
     options = {
-      q: 'structCountry_s:fr',
-      fq: 'producedDateY_i:2014',
+      q: '*',
       rows: 1000,
       sort: 'docid asc',
       cursorMark: '*'
