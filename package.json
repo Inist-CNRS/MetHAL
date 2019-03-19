@@ -7,7 +7,7 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc mocha"
   },
   "repository": {
     "type": "git",
@@ -16,6 +16,11 @@
   "author": "ezPAARSE Team",
   "license": "ISC",
   "dependencies": {
-    "request": "^2.88.0"
+    "axios": "^0.18.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "nyc": "^13.3.0"
   }
 }

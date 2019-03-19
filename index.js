@@ -1,6 +1,7 @@
 'use strict';
-
-const request = require('request');
+const axios = require('axios');
+const { Readable } = require('stream');
+const querystring = require('querystring');
 
 /**
  * Build a (sub)query string from search options
@@ -8,8 +9,8 @@ const request = require('request');
  * @param  {String} operator operator to use between options, ie. AND/OR
  * @return {String}          solr compliant query string
  */
-function buildQuery(search, operator) {
-  search   = search   || {};
+function buildQuery (search, operator) {
+  search = search || {};
   operator = operator || 'AND';
 
   const parts = [];
@@ -25,20 +26,20 @@ function buildQuery(search, operator) {
 
     for (const p in search) {
       switch (p) {
-      case '$or':
-        subquery = buildQuery(search[p], 'OR');
-        if (subquery) { parts.push(subquery); }
-        break;
-      case '$and':
-        subquery = buildQuery(search[p], 'AND');
-        if (subquery) { parts.push(subquery); }
-        break;
-      case '$not':
-        subquery = buildQuery(search.$not, 'OR');
-        if (subquery) { negation = `NOT(${subquery})`; }
-        break;
-      default:
-        parts.push(`${p}:${search[p].toString()}`);
+        case '$or':
+          subquery = buildQuery(search[p], 'OR');
+          if (subquery) parts.push(subquery);
+          break;
+        case '$and':
+          subquery = buildQuery(search[p], 'AND');
+          if (subquery) parts.push(subquery);
+          break;
+        case '$not':
+          subquery = buildQuery(search.$not, 'OR');
+          if (subquery) negation = `NOT(${subquery})`;
+          break;
+        default:
+          parts.push(`${p}:${search[p].toString()}`);
       }
     }
   }
@@ -63,14 +64,13 @@ function buildQuery(search, operator) {
  * @param  {Function} callback(err, docs)
  */
 exports.find = function (search, options, callback) {
-
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   exports.query(search, options, function (err, result) {
-    if (err) { return callback(err); }
+    if (err) return callback(err);
 
     if (result.response && Array.isArray(result.response.docs)) {
       callback(null, result.response.docs);
@@ -91,7 +91,7 @@ exports.findOne = function (search, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   options.rows = 1;
@@ -118,7 +118,7 @@ exports.query = function (search, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
-    options  = {};
+    options = {};
   }
 
   const query = (typeof search === 'string' ? search : buildQuery(search, 'AND') || '*:*');
@@ -148,29 +148,59 @@ exports.query = function (search, options, callback) {
   for (const p in options) {
     url += `&${p}=${options[p]}`;
   }
-
-  request.get(url, requestOptions, function (err, res, body) {
-    if (err) { return callback(err); }
-
-    if (res.statusCode !== 200) {
-      return callback(new Error(`unexpected status code : ${res.statusCode}`));
+  axios.get(url, requestOptions).then(response => {
+    if (response.status !== 200) {
+      return callback(new Error(`unexpected status code : ${response.statusCode}`));
     }
 
-    let info;
-
-    try {
-      info = JSON.parse(body);
-    } catch(e) {
-      return callback(e);
-    }
-
-    // if an error is thown, the json should contain the status code and a detailed message
-    if (info.error) {
-      const error = new Error(info.error.msg || 'got an unknown error from the API');
-      error.code = info.error.code;
-      return callback(error) ;
-    }
-
-    callback(null , info);
-  });
+    callback(null, response.data);
+  }).catch(error => callback(error));
 };
+
+/**
+ * Cursor strength to scroll through thousands of results encapsulated in a stream
+ */
+class ApiHalStream extends Readable {
+  constructor (
+    options = {
+      q: '*'
+    }
+  ) {
+    super({ objectMode: true });
+    this.reading = false;
+    this.counter = 0;
+    this.urlBase = 'http://api.archives-ouvertes.fr/search';
+    this.params = options;
+    this.params.sort = 'docid asc';
+    this.params.cursorMark = '*';
+    this.params.rows = 1000;
+  }
+
+  _read () {
+    if (this.reading) return false;
+    this.reading = true;
+    const self = this;
+    function getMoreUntilDone (url) {
+      axios.get(url).then(response => {
+        response.data.response.docs.map((doc) => {
+          self.counter++;
+          self.push(doc);
+        });
+        if (self.counter < response.data.response.numFound) {
+          self.params.cursorMark = response.data.nextCursorMark;
+          const nextUrl = `${self.urlBase}/?${querystring.stringify(self.params)}`;
+          getMoreUntilDone(nextUrl);
+        } else {
+          self.push(null);
+          self.counter = 0;
+          self.reading = false;
+        }
+      }).catch(error => {
+        self.emit('error', error);
+      });
+    }
+    getMoreUntilDone(`${this.urlBase}/?${querystring.stringify(this.params)}`);
+  }
+}
+
+exports.Stream = ApiHalStream;
