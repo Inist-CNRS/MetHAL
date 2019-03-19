@@ -11,14 +11,12 @@ describe(`${pkg.name}/index.js`, function () {
     it('should return a valid response', function (done) {
       metHal.query('*', (error, result) => {
         if (error) return done(error);
+
         expect(result).to.be.an('object');
-        expect(result).to.have.property('response');
-        expect(result.response).to.have.property('numFound');
-        expect(result.response.numFound).to.be.a('number');
-        expect(result.response).to.have.property('start');
-        expect(result.response.start).to.be.a('number');
-        expect(result.response).to.have.property('docs');
-        expect(result.response.docs).to.be.an('array');
+        expect(result).to.have.property('response').that.is.an('object');
+        expect(result.response).to.have.property('numFound').that.is.a('number');
+        expect(result.response).to.have.property('start').that.is.a('number');
+        expect(result.response).to.have.property('docs').that.is.an('array');
         done();
       });
     });
@@ -28,6 +26,7 @@ describe(`${pkg.name}/index.js`, function () {
     it('should return multiple docs', function (done) {
       metHal.find('*', (error, docs) => {
         if (error) return done(error);
+
         expect(docs).to.be.an('array');
         docs.map(doc => {
           expect(doc).to.be.an('object');
@@ -39,11 +38,12 @@ describe(`${pkg.name}/index.js`, function () {
       });
     });
 
-    it('should return multiple docs who title contains beryllium', function (done) {
+    it('should return multiple docs whose title contains beryllium', function (done) {
       metHal.find({
         title_t: 'beryllium'
       }, (error, docs) => {
         if (error) return done(error);
+
         expect(docs).to.be.an('array');
         docs.map(doc => {
           expect(doc).to.be.an('object');
@@ -60,6 +60,7 @@ describe(`${pkg.name}/index.js`, function () {
     it('should return just one doc', function (done) {
       metHal.findOne('*', (error, doc) => {
         if (error) return done(error);
+
         expect(doc).to.be.an('object');
         expect(doc).to.have.property('docid');
         expect(doc).to.have.property('label_s');
